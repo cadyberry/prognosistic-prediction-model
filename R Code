@@ -1,0 +1,336 @@
+
+
+# Import data 
+  setwd("C:/Users/ab3245/Desktop/categorical data")
+  library("readr")
+  cancer<-read_table("cancer.txt"); View(cancer)
+  
+ # Library packages
+  library(corrplot) 
+  library(generalhoslem)
+  library(psych)
+  library(epiDisplay)
+  library(caret)
+ # library(Hmisc)
+ # library(aod)
+ # library(car)
+
+# Data prep
+
+  # set seed
+  set.seed(123445)
+
+  # set ID to null
+  cancer$ID <-NULL
+
+  # revalue class: 1 = malignant, 0 = benign
+  cancer$Class <- ifelse(cancer$Class == "1",0,1)
+  cancer$Class<-as.factor(cancer$Class)
+  summary(cancer$Class)
+  # rename vars
+  Class<- cancer$Class; Adhes<- cancer$Adhes; BNucl<- cancer$BNucl
+  Chrom<- cancer$Chrom; Epith<- cancer$Epith; Mitos<- cancer$Mitos
+  NNucl<- cancer$NNucl; Thick<- cancer$Thick; UShap<- cancer$UShap; USize<- cancer$USize
+
+
+# Preliminary analysis 
+
+# summary info            
+    summary(cancer)
+
+# variable names 
+  names(cancer)
+  
+# first 5 
+  head(cancer)
+ 
+# Boxplots of vars ~ Class 
+# set R plots to grid
+par(mfrow=c(3,3), omi=c(0.5,0.3,0,0), plt=c(0.1,0.9,0.2,0.7))
+
+boxplot(Adhes~Class,
+        cex.main= 0.75,
+        horizontal = TRUE,
+        main= "Distribution of Adhes by Class")
+boxplot(Epith~Class,
+        cex.main= 0.75,
+        horizontal = TRUE,
+        main= "Distribution of Epith by Class")
+boxplot(Mitos~Class,
+        cex.main= 0.75,
+        horizontal = TRUE,
+        main= "Distribution of Mitos by Class")
+boxplot(NNucl~Class,
+        cex.main= 0.75,
+        horizontal = TRUE,
+        main= "Distribution of NNucl by Class")
+boxplot(Thick~Class,
+        cex.main= 0.75,
+        horizontal = TRUE,
+        main= "Distribution of Thick by Class")
+boxplot(UShap~Class,
+        cex.main= 0.75,
+        horizontal = TRUE,
+        main= "Distribution of UShap by Class")
+boxplot(USize~Class,
+        cex.main= 0.75,
+        horizontal = TRUE,
+        main= "Distribution of USize by Class")
+boxplot(BNucl~Class,
+        cex.main= 0.75,
+        horizontal = TRUE,
+        main= "Distribution of BNucl by Class")
+boxplot(Chrom~Class,
+        cex.main= 0.75,
+        horizontal = TRUE,
+        main= "Distribution of Chrom by Class")
+
+
+# Correlations 
+
+ correlations<- c(2:10)
+ round(cor(cancer[,correlations]),2)
+
+# pearson correlation plots
+pairs.panels(cancer[, c(2:10)], 
+             method = "pearson",
+             hist.col = "#00AFBB",
+             density = FALSE,
+             ellipses = FALSE,
+             stars = TRUE,
+             pch=0.05,
+             cex.labels=1,
+             cex.cor = 1.75,
+             main= "Pearson Correlations",
+             cex.main= 1)
+             
+# Model building 
+  # create full model
+
+  full_model <- glm(Class ~ Adhes + BNucl + Chrom + Epith + Mitos + NNucl + 
+                      Thick + UShap + USize, family=binomial,data=cancer); summary(full_model)
+  # create null model
+  null_model <- glm(Class ~ 1, family=binomial,data=cancer)
+
+
+  # Confidence intervals 
+  confint(full_model, level = 0.95)
+    # Epith, Ushap, Usize interval crosses 0, meaning we cannot interpret it, need OR
+
+  # Odds ratio
+  exp(coef(full_model))
+
+  # Hosmer Lemeshow Goodness of Fit test
+
+  logitgof(cancer$Class, fitted(full_model))
+        # X-squared = 4.2102, df = 8, p-value = 0.8377
+        # indicates good fit
+
+  # Classification tables
+  # testing cutoff values 0.3495, 0.5, 0.9
+  
+  # 238/681 = 0.3495 cutoff value
+    PH <- predict(full_model, type = "response"); head(PH)
+    YH <- as.numeric(PH> 0.349465); head(YH)
+    Y <- as.numeric(cancer$Class == 1); head(Y)
+    table(Y, YH)
+    addmargins(table(Y, YH), 2)
+
+  # cutoff value 0.9
+    PH2 <- predict(full_model, type = "response"); head(PH2)
+    YH2 <- as.numeric(PH2 0.9); head(YH2)
+    Y2<- as.numeric(cancer$Class==1); head(Y2)
+    table(Y2, YH2)
+    addmargins(table(y2, yhat2), 2)
+  
+  # cutoff value 0.5
+    PH3 <- predict(full_model, type = "response"); head(PH3)
+    YH3 <- as.numeric(PH3> 0.5); head(YH3)
+    Y3 <- as.numeric(cancer$Class==1); head(Y3)
+    table(Y3, YH3)
+    addmargins(table(Y3, YH3), 2)
+  
+  # ROC Curve 
+
+  logistic.display(full_model)
+  lroc(full_model, title=TRUE, graph=FALSE)$auc # 0.9974486
+  lroc(full_model, grid=FALSE, title=TRUE)
+
+  # Stepwise selection procedures
+
+
+ # Forward
+  step(null_model,
+       scope = list(upper=full_model),
+       direction="forward",
+       test="Chisq",
+       data=cancer)
+
+# Backward
+  step(full_model,
+       scope = list(upper=full_model),
+       direction="backward",
+       test="Chisq",
+       data=cancer)
+
+  # stepwise procedure results = 
+  # Class ~ USize + BNucl + Thick + Chrom + Adhes + NNucl + Mitos
+  # Class ~ Adhes + BNucl + Chrom + Mitos + NNucl + Thick + UShap
+
+  ModelA<- glm(Class~ USize + BNucl + Thick + Chrom + Adhes + NNucl + Mitos,
+              family = binomial, data = cancer)
+
+  ModelB<- glm(Class ~ Adhes + BNucl + Chrom + Mitos + NNucl + Thick + UShap, 
+              family = binomial, data = cancer)
+
+  summary(ModelB)
+  summary(ModelA)
+  
+  # Compare goodness of fit between ModelA and ModelB
+
+  logitgof(cancer$Class, fitted(ModelA))
+      # X-squared = 4.9732, df = 8, p-value
+      # = 0.7604
+      
+  logitgof(cancer$Class, fitted(ModelB))  # ModelB is the updated model due to higher HL results and AIC score 
+      # X-squared = 4.4695, df = 8, p-value
+      #= 0.8125
+  
+  # Plot of predicted probabilities
+
+  cancer$Class<-as.numeric(cancer$Class)
+  cancer$Class <- ifelse(cancer$Class=="1",0,1)
+  
+    #  predicted prob. for outcome
+prediction<- predict(full_model, cancer, type= "response")
+prediction
+
+# ID 644 is new patient: 1,1,3,2,1,1,4,1
+# confirm with calculating equation with input variables 
+
+
+# Building new models using train/test sets partitioned on response variable
+
+inTrain <- createDataPartition(
+  y = cancer$Class, p = .66,
+  list = FALSE)
+
+str(inTrain)
+cancer.train <- cancer[ inTrain,]
+cancer.test <- cancer[-inTrain,]
+
+cancer.test$ID<- NULL
+cancer.train$ID<-NULL
+
+write.csv(cancer.train, "cancer.train")
+write.csv(cancer.test, "cancer.test")
+
+# confirm stratification
+  cancer.train$Class<- as.factor(cancer.train$Class)
+  cancer.test$Class<- as.factor(cancer.test$Class)
+  summary(cancer.train$Class)
+  summary(cancer.test$Class)
+
+
+# X2 test 
+  PT - matrix( c(293,150,158,80),nrow=2)
+  colnames(pt) <- c("Benign (0) ","Malignant (1)")
+  rownames(pt) <- c("Training","Test"); PT
+  
+ # proportions table
+  round(prop.table(pt, 1), 4)
+
+
+chisq.test(PT, correct = FALSE) 
+
+cancer.train$part <-
+  rep("train", nrow(cancer.train))
+cancer.test$part <-
+  rep("test", nrow(cancer.test))
+cancer.all <- rbind(cancer.train, cancer.test)
+
+
+# Boxplot and KW test to validate
+boxplot(Adhes ~ as.factor(part), data = cancer.all) 
+kruskal.test(cancer.all$Adhes ~ as.factor(part), 
+             data = cancer.all)
+             
+# remove part
+cancer.train$part<- NULL
+cancer.test$part<- NULL
+
+
+
+# Create full model using train data
+
+# rename vars
+Classt<- cancer.train$Class; Adhest<- cancer.train$Adhes; 
+BNuclt<- cancer.train$BNucl; Chromt<- cancer.train$Chrom; 
+Epitht<- cancer.train$Epith; Mitost<- cancer.train$Mitos
+NNuclt<- cancer.train$NNucl; Thickt<- cancer.train$Thick; 
+UShapt<- cancer.train$UShap; USizet<- cancer.train$USize
+
+# full model
+Train.Full <- glm(Classt ~ Adhest + BNuclt + Chromt + Epitht + Mitost + NNuclt + 
+                  Thickt + UShapt + USizet, family=binomial, data=cancer.train)
+# null model 
+train.null <- glm(Classt ~ 1, family=binomial,data=cancer.train)
+
+summary(train.Full)
+
+# stepwise procedures
+
+step(train.null,
+     scope = list(upper=train.Full),
+     direction="forward",
+     test="Chisq",
+     data=cancer.train) # 6 vars, AIC: 81.97, modely
+
+step(train.Full,
+     scope = list(upper=train.Full),
+     direction="backward",
+     test="Chisq",
+     data=cancer.train) # 5 vars, AIC: 80.05, modelx
+
+modelX <- glm(formula = Classt ~ Adhest + BNuclt + Chromt + NNuclt + Thickt, 
+        family = binomial, data = cancer.train)
+
+modelY <- glm(formula = Classt ~ USizet + BNuclt + NNuclt + Thickt + Chromt + 
+                Adhest, family = binomial, data = cancer.train)
+summary(modelX)
+summary(modelY)
+
+# HL Goodness of fit Test
+hl2<- logitgof(Classt, fitted(modelY), g=10)
+hl<- logitgof(Classt, fitted(modelX), g=10)
+
+# Expected vs observed from HL test
+cbind(hl$expected, hl$observed)
+cbind(hl2$expected, hl2$observed)
+
+# model X is updated model
+# rename to modelZ for test data
+
+ModelZ <- glm(Class ~ Adhes + BNucl + Chrom + NNucl + Thick, 
+              family = binomial, data = cancer.test)
+summary(ModelZ)
+
+# HL Goodness of fit test
+hl3<- logitgof(cancer.test$Class, fitted(ModelZ), g=10)
+
+# Classification table
+
+PH4 <- predict(ModelZ, type="response")
+YH4 <- as.numeric(PH4> 0.349486)
+Y4<- as.numeric(cancer.test$Class==1)
+table(Y4, YH4)
+addmargins(table(Y4, YH4), 2)
+
+# ROC curve
+logistic.display(ModelZ)
+lroc(ModelZ, title=TRUE, graph=FALSE)$auc 
+lroc(ModelZ, grid=FALSE, title=TRUE)
+
+# AUC = 0.999
+
+
