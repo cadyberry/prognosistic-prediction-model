@@ -129,6 +129,9 @@ pairs.panels(cancer[, c(2:10)],
   # Classification tables
   # testing cutoff values 0.3495, 0.5, 0.9
   
+  # 238 malignant records 
+  # 681 total records
+  
   # 238/681 = 0.3495 cutoff value
     PH <- predict(full_model, type = "response"); head(PH)
     YH <- as.numeric(PH> 0.349465); head(YH)
