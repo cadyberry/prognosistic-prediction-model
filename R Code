@@ -209,7 +209,7 @@ prediction<- predict(full_model, cancer, type= "response")
 prediction
 
 # ID 644 is new patient: 1,1,3,2,1,1,4,1
-# confirm with calculating equation with input variables 
+# confirm by calculating equation with input variables 
 
 
 # Building new models using train/test sets partitioned on response variable
