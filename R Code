@@ -6,14 +6,9 @@
   cancer<-read_table("cancer.txt"); View(cancer)
   
  # Library packages
-  library(corrplot) 
   library(generalhoslem)
   library(psych)
-  library(epiDisplay)
   library(caret)
- # library(Hmisc)
- # library(aod)
- # library(car)
 
 # Data prep
 
