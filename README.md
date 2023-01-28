@@ -18,7 +18,10 @@ The final model, ModelX, includes five predictor variables (Adhes + BNucl + Chro
 ![](images/Classtable.JPG)
 
 
-ROC curve was constructed for this model using the test data. AUC value is extremely large, reported as 0.999. 
+Receiving operating characteristic (ROC) curve was constructed for this model using the test data set. Area under the ROC curve (AUC) value is 0.999, indicating  high accuracy model predictions.
+
+
+
 ![](images/ROC_curve.JPG)
 
 
