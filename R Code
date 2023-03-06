@@ -5,14 +5,13 @@
   library("readr")
   cancer<-read_table("cancer.txt"); View(cancer)
   
- # Library packages
+ # Packages
   library(generalhoslem)
   library(psych)
   library(caret)
 
 # Data prep
 
-  # set seed
   set.seed(123445)
 
   # set ID to null
@@ -22,13 +21,14 @@
   cancer$Class <- ifelse(cancer$Class == "1",0,1)
   cancer$Class<-as.factor(cancer$Class)
   summary(cancer$Class)
+  
   # rename vars
   Class<- cancer$Class; Adhes<- cancer$Adhes; BNucl<- cancer$BNucl
   Chrom<- cancer$Chrom; Epith<- cancer$Epith; Mitos<- cancer$Mitos
   NNucl<- cancer$NNucl; Thick<- cancer$Thick; UShap<- cancer$UShap; USize<- cancer$USize
 
 
-# Preliminary analysis 
+# EDA
 
 # summary info            
     summary(cancer)
@@ -100,11 +100,12 @@ pairs.panels(cancer[, c(2:10)],
              cex.main= 1)
              
 # Model building 
-  # create full model
+  # full model including all 9 variables
 
   full_model <- glm(Class ~ Adhes + BNucl + Chrom + Epith + Mitos + NNucl + 
                       Thick + UShap + USize, family=binomial,data=cancer); summary(full_model)
-  # create null model
+ 
+ # create null model
   null_model <- glm(Class ~ 1, family=binomial,data=cancer)
 
 
@@ -119,7 +120,7 @@ pairs.panels(cancer[, c(2:10)],
 
   logitgof(cancer$Class, fitted(full_model))
         # X-squared = 4.2102, df = 8, p-value = 0.8377
-        # indicates good fit
+        # large p-value indicates good fit
 
   # Classification tables
   # testing cutoff values 0.3495, 0.5, 0.9
@@ -149,14 +150,13 @@ pairs.panels(cancer[, c(2:10)],
     addmargins(table(Y3, YH3), 2)
   
   # ROC Curve 
-
   logistic.display(full_model)
   lroc(full_model, title=TRUE, graph=FALSE)$auc # 0.9974486
   lroc(full_model, grid=FALSE, title=TRUE)
 
+
   # Stepwise selection procedures
-
-
+  
  # Forward
   step(null_model,
        scope = list(upper=full_model),
@@ -181,8 +181,8 @@ pairs.panels(cancer[, c(2:10)],
   ModelB<- glm(Class ~ Adhes + BNucl + Chrom + Mitos + NNucl + Thick + UShap, 
               family = binomial, data = cancer)
 
-  summary(ModelB)
   summary(ModelA)
+  summary(ModelB)
   
   # Compare goodness of fit between ModelA and ModelB
 
@@ -203,7 +203,8 @@ pairs.panels(cancer[, c(2:10)],
 prediction<- predict(full_model, cancer, type= "response")
 prediction
 
-# ID 644 is new patient: 1,1,3,2,1,1,4,1
+# identify outcome of patient with scores: 1,1,3,2,1,1,4,1
+# (ID 644)
 # confirm by calculating equation with input variables 
 
 
@@ -248,18 +249,18 @@ cancer.test$part <-
 cancer.all <- rbind(cancer.train, cancer.test)
 
 
-# Boxplot and KW test to validate
+# Boxplot and KW test to validate partition
 boxplot(Adhes ~ as.factor(part), data = cancer.all) 
 kruskal.test(cancer.all$Adhes ~ as.factor(part), 
              data = cancer.all)
              
-# remove part
+# remove part variable
 cancer.train$part<- NULL
 cancer.test$part<- NULL
 
 
 
-# Create full model using train data
+# Re-create full model using train data
 
 # rename vars
 Classt<- cancer.train$Class; Adhest<- cancer.train$Adhes; 
@@ -302,12 +303,12 @@ summary(modelY)
 hl2<- logitgof(Classt, fitted(modelY), g=10)
 hl<- logitgof(Classt, fitted(modelX), g=10)
 
-# Expected vs observed from HL test
+# Expected vs observed freq. from HL test
 cbind(hl$expected, hl$observed)
 cbind(hl2$expected, hl2$observed)
 
-# model X is updated model
-# rename to modelZ for test data
+# modelX is updated model
+# rename modelX to modelZ using test data
 
 ModelZ <- glm(Class ~ Adhes + BNucl + Chrom + NNucl + Thick, 
               family = binomial, data = cancer.test)
