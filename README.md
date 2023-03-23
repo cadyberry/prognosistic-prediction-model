@@ -11,7 +11,7 @@ The final model, ModelX, includes five predictor variables (Adhes + BNucl + Chro
 
 
 
-![](images/Classtable.JPG) ![](images/ROC_curve.JPG)
+#![](images/Classtable.JPG) ![](images/ROC_curve.JPG)
 
 
 
