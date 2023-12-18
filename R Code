@@ -1,18 +1,17 @@
 
-
 # Import data 
-  setwd("C:/Users/ab3245/Desktop/categorical data")
-  library("readr")
-  cancer<-read_table("cancer.txt"); View(cancer)
+cancer<-read_table("cancer.txt")
+View(cancer)
   
  # Packages
+  library("readr")
   library(generalhoslem)
   library(psych)
   library(caret)
 
 # Data prep
 
-  set.seed(123445)
+  set.seed(12345)
 
   # set ID to null
   cancer$ID <-NULL
@@ -36,7 +35,7 @@
 # variable names 
   names(cancer)
   
-# first 5 
+# first 5 rows
   head(cancer)
  
 # Boxplots of vars ~ Class 
