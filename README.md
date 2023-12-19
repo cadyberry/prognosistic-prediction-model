@@ -1,7 +1,7 @@
 # Prognostic Prediction Model
 
 
-A logistic regression model with 98% accuracy was built to predict whether a patient's tumor is malignant or benign using 5 biomarkers. Steps of this analysis include identifying significant explanatory variables, multivariate correlations, partitioning data, stepwise procedure for model selection, internal model validation, determining the goodness of fit, assessing predictive power and producing relevant statistics about independent variables. 
+A logistic regression model with 98% accuracy and 99% AUC was built to predict whether a patient's tumor is malignant or benign using 5 biomarkers. Steps of this analysis include identifying significant explanatory variables, multivariate correlations, partitioning data, stepwise procedure for model selection, internal model validation, determining the goodness of fit, assessing predictive power and producing relevant statistics about independent variables. 
 
 
 Variable selection methods include stepwise backward elimination and forward selection procedures. AIC scores, ROC curvature, AUC values and predictive power of the models were considered in model selection. Residual analysis was used to determine the fit of candidate models using the Hosmer-Lemeshow test. Sensitivity, specificity and accuracy were calculated using various cutoff values. 
