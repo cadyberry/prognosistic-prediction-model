@@ -6,7 +6,7 @@ A logistic regression model with 98% accuracy and 99% AUC was built to predict w
 
 Variable selection methods include stepwise backward elimination and forward selection procedures. AIC scores, ROC curvature, AUC values and predictive power of the models were considered in model selection. Residual analysis was used to determine the fit of candidate models using the Hosmer-Lemeshow test. Sensitivity, specificity and accuracy were calculated using various cutoff values. 
 
-The final model, ModelX, includes five predictor variables (Adhes + BNucl + Chrom + NNucl + Thick). Hosmer-Lemeshow test produced a large p-value (X2 = 3.0173, df = 8, p = 0.9333) indicating a strong measure of goodness of fit. ModelX has AIC score of 80.05, the lowest of all models and (AUC) value is 0.999, indicating  high accuracy model predictions. ModelX has 98% accuracy, 100% sensitivity and 98.0% specificity, using the testing data with a cutoff of π0 = 0.349 (the proportion of malignant tumors in the entire sample). 
+The final model includes five predictor variables (Adhes + BNucl + Chrom + NNucl + Thick). Hosmer-Lemeshow test produced a large p-value (X2 = 3.0173, df = 8, p = 0.9333) indicating a strong measure of goodness of fit. This model has an AIC score of 80.05, the lowest of all models and (AUC) value is 0.999, indicating  high accuracy model predictions. The final model performed with 98% accuracy, 100% sensitivity and 98.0% specificity, using the testing data with a cutoff of π0 = 0.349 (the proportion of malignant tumors in the entire sample). 
 
 
 
